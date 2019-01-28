@@ -4,6 +4,8 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.know.micro.services.currencyconversionmicroservice.model.CurrencyConversion;
+import org.know.micro.services.currencyconversionmicroservice.proxy.CurrencyExchangeMicroServiceProxy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +28,7 @@ public class CurrencyConversionResource {
             pathVariables.put("to", to);
             pathVariables.put("from", from);
         final ResponseEntity<CurrencyConversion> responseEntity = new RestTemplate().
-                getForEntity("http://localhost:8000/currency-exchange/from/{from}/to/{to}",CurrencyConversion.class,pathVariables);
+                getForEntity("http://localhost:8001/currency-exchange/from/{from}/to/{to}",CurrencyConversion.class,pathVariables);
         final CurrencyConversion response = responseEntity.getBody();
         final CurrencyConversion result = new CurrencyConversion(response.getId(),
                 from,to,response.getConversionMultiple(),new BigInteger(quantity+""),
@@ -34,4 +36,21 @@ public class CurrencyConversionResource {
         result.setPort(response.getPort());
         return result;
     }
+    
+    @Autowired
+    private CurrencyExchangeMicroServiceProxy currencyExchangeMicroService;
+    
+    @GetMapping("/currency-converter/proxy/from/{from}/to/{to}/quantity/{quantity}")
+    public CurrencyConversion convertUsingProxyService(@PathVariable String from,
+                        @PathVariable String to,
+                        @PathVariable Integer quantity) throws Exception{
+
+        final CurrencyConversion response = currencyExchangeMicroService.exchangeConversionRate(from, to);
+        final CurrencyConversion result = new CurrencyConversion(response.getId(),
+                from,to,response.getConversionMultiple(),new BigInteger(quantity+""),
+                response.getConversionMultiple().multiply(new BigInteger(quantity+"")));
+        result.setPort(response.getPort());
+        return result;
+    }
+    
 }
