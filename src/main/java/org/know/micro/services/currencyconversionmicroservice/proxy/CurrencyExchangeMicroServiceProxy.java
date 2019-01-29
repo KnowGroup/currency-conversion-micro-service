@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.PathVariable;
  *
  * @author KnowGroup
  */
-@FeignClient("currency-exchange-micro-service")
+//@FeignClient("currency-exchange-micro-service")
+@FeignClient("netflix-zuul-api-gateway-server")
 @RibbonClient("currency-exchange-micro-service")
 public interface CurrencyExchangeMicroServiceProxy {
 
-       @GetMapping("/currency-exchange/from/{from}/to/{to}")
+    public final String APPLICATION_NAME = "currency-exchange-micro-service";
+       @GetMapping(APPLICATION_NAME+"/currency-exchange/from/{from}/to/{to}")
     public CurrencyConversion exchangeConversionRate(@PathVariable("from") String from, 
             @PathVariable("to") String to);
     
